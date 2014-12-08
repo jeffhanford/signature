@@ -90,6 +90,8 @@ Faster---------Slower</br>
 <p id="backload"></p>
 
 <?php
+//The user interface of the signature generator
+
 include 'WGAPI.php';
 $down = false;
 $tokenurl = getTokenLink();
@@ -98,7 +100,7 @@ if(isset($_GET['account_id'])&&isset($_GET['access_token'])) {
 	$playerID = $_GET['account_id'];
 	$token = $_GET['access_token'];
 	$nickname = getRealName($playerID);
-	$verified = validLogin($playerID,$token);
+	$verified = validLogin($playerID,$token);	//Checks whether or not a login is actually valid
 }
 ?>
 
@@ -110,12 +112,12 @@ var urlstart = "http://www.tioga.moe/signature/sigs/";
 var urlend = ".png";
 var urlend2 = ".gif";
 
-
+//Converts hex string color to rgb
 function hexToRgb(hex) {
     var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return parseInt(result[1], 16).toString() + "," + parseInt(result[2], 16).toString() + "," + parseInt(result[3], 16).toString();
 }
-
+//Converts settings to json to be stored in database
 function getSettings(){
 	var toptanksval = document.getElementById('toptanks').checked;
 	var gamesval = document.getElementById('games').checked;
@@ -124,9 +126,10 @@ function getSettings(){
 	returnarray['toptanks'] = toptanksval;
 	returnarray['games'] = gamesval;
 	returnarray['clan'] = clanval;
-	return JSON.stringify(returnarray);	
+	return JSON.stringify(returnarray);	 
 }
 
+//Verifies that an imgur link is actually an imgur png, jpeg, or gif link
 function checkImgur(x) {
 	x = x.toString();
 	var errortext = '';
@@ -155,6 +158,7 @@ function checkImgur(x) {
 	return returned;
 }
 
+//Executes update.php with the post values specified
 function getSig()
 {
 document.getElementById('sigimg').src = "http://www.tioga.moe/signature/sigload.gif";
@@ -209,6 +213,7 @@ document.getElementById("getSigButton").onclick = getSig;
 
 
 <script>
+//Initialize the webpage
 	document.getElementById('backpick').value = '000000';
 	var verified = "<?php echo $verified; ?>";
 	var nickname = "<?php echo $nickname; ?>";
@@ -218,17 +223,23 @@ document.getElementById("getSigButton").onclick = getSig;
 	document.getElementById('games').checked = true;
 	document.getElementById('clan').checked = true;
 	//var down = true;
+	
+	//If I am performing maintenance, disable the webpage
 	if (down){
 		var downmessage = 'I am performing maintenance. Please try again later.'.fontcolor('red');
 		document.getElementById('down').innerHTML = downmessage;
 		document.getElementById('getSigButton').disabled = true;
 	}
+	
+	//If the player is not logged in, set the default page values
 	if(!verified){
 		document.getElementById("login").innerHTML = "Not Logged in";
 		document.getElementById('sigurlfield').value = "none";
 		document.getElementById('sigurlfield').disabled = true;
 		document.getElementById('points').disabled = true;
 	}
+	
+	//If they are logged in, lock the name field and unlock special fields
 	else
 	{
 		//document.getElementById("upform").action += nickname;

@@ -9,9 +9,11 @@
 <?php
 
 //include 'signature.php';
+
+//Returns whether or not the player is registered with WOT as boolean
 function playerExists($playername){
 	$key = getWGAPIkey();
-	$contents = file_get_contents('http://api.worldoftanks.com/wot/account/list/?application_id=".$key."&type=exact&fields=account_id&search='.$playername);
+	$contents = file_get_contents('http://api.worldoftanks.com/wot/account/list/?application_id='.$key.'&type=exact&fields=account_id&search='.$playername);
 	$array = json_decode($contents, true);
 	$data = $array['data'];
 	$data = $data[0];
@@ -20,15 +22,17 @@ function playerExists($playername){
 	else {return false;}
 }
 
+//Returns playerID give playername
 function getPlayerID($playername){
 	$key = getWGAPIkey();
-	$contents = file_get_contents('http://api.worldoftanks.com/wot/account/list/?application_id=".$key."&type=exact&fields=account_id&search=' . $playername);
+	$contents = file_get_contents('http://api.worldoftanks.com/wot/account/list/?application_id='.$key.'&type=exact&fields=account_id&search=' . $playername);
 	$array = json_decode($contents, true);
 	$data = $array['data'];
 	$data = $data[0];
 	return $data['account_id'];
 }
 
+//Returns the true capitalization of the player's nickname given the playerID
 function getRealName($playerID){
 	$key = getWGAPIkey();
 	$contents = file_get_contents("http://api.worldoftanks.com/wot/account/info/?application_id=".$key."&account_id=" . $playerID);
@@ -39,6 +43,7 @@ function getRealName($playerID){
 	return $data['nickname'];	
 }
 
+//Returns the three tank ids of the player's most played tanks' pictures
 function getMostplayedTanks($playerID){
 	$key = getWGAPIkey();
 	$contents = file_get_contents("https://api.worldoftanks.com/wot/account/tanks/?application_id=".$key."&fields=tank_id&account_id=" . $playerID);
@@ -54,6 +59,7 @@ function getMostplayedTanks($playerID){
 	return array((string)$tank1, (string)$tank2, (string)$tank3);
 }
 
+//Takes the tankid and returns the url of the picture
 function getTankUrl($tankID){
 	$key = getWGAPIkey();
 	$contents = file_get_contents("https://api.worldoftanks.com/wot/encyclopedia/tanks/?application_id=".$key."&fields=contour_image");
@@ -63,6 +69,8 @@ function getTankUrl($tankID){
 	return $tank['contour_image'];
 }
 
+//Returns the player's nickname, clanID, pr, battles, winrate, and whether or not they are in a clan given the playerID
+//This is where most of the important information is pulled from wargaming's database
 function getPlayerInfo($playerID){
 	$key = getWGAPIkey();
 	$contents = file_get_contents("http://api.worldoftanks.com/wot/account/info/?application_id=".$key."&account_id=" . $playerID);
@@ -91,8 +99,8 @@ function getPlayerInfo($playerID){
 				$inclan);
 }
 
-
-
+//Returns the player's clan tag and ranking given the playerID and clanID
+//Assumes that the player is in the given clan
 function getClanInfo($playerID, $clanID){
 	$key = getWGAPIkey();
 	$contents = file_get_contents("http://api.worldoftanks.com/wot/clan/info/?application_id=".$key."&clan_id=".$clanID);
@@ -112,6 +120,7 @@ function getClanInfo($playerID, $clanID){
 	
 }
 
+//Returns the given clanID's clan tag url
 function getClanEmblem($clanID){
 	$key = getWGAPIkey();
 	$contents = file_get_contents("http://api.worldoftanks.com/wot/clan/info/?application_id=".$key."&clan_id=".$clanID . "&fields=emblems.large");
@@ -124,12 +133,14 @@ function getClanEmblem($clanID){
 	return (string)$emblem;
 }
 
+//Returns whether or not a player is currently in a clan
 function isInClan($playerID){
 	$clan = getClanID($playerID);
 	if (strrpos($clan, "}") > -1) {return false;}
 	else {return true;}
 }
 
+//Cleans the clan ranks to the more common names
 function cleanRank($rank)
 {
 	if($rank == "commander"){
@@ -171,17 +182,23 @@ function cleanRank($rank)
 	return (string)$rank;
 
 }
+
+//Divides wins by battles played, rounds to nearest int, and adds a % sign
 function getWinRate($battles, $wins){
 	//statistics.all.wins
 	$winrate = round((float)$wins/(float)$battles, 2)*100;
 	return (string)$winrate.'%';
 }
+
+//Checks whether or not a given login token is valid
 function validLogin($playerID, $token){
 	$key = getWGAPIkey();
 	$contents = file_get_contents("http://api.worldoftanks.com/wot/account/info/?application_id=".$key."&account_id=".$playerID."&access_token=".$token);
 	if (strrpos($contents, "INVALID_ACCESS_TOKEN") > -1) {return 0;}
 	else {return 1;}
 }
+
+//Gets the wotlabs statistics of a player given their name, assumes the name is correct
 function getWotlabs($playername){
 	$key = getWotlabskey();
 	$wotlabsapi = file_get_contents("http://wotlabs.net/api.php?server=na&player=".$playername."&key=".$key);
@@ -200,6 +217,7 @@ function getWotlabs($playername){
 	return $helpfulstats;
 }
 
+//Gets the recent exp/game of a given playerID
 function getExpRecent($playerID){
 	$key = getWGAPIkey();
 	$stats = file_get_contents("https://api.worldoftanks.com/wot/ratings/accounts/?application_id=".$key."&type=28&account_id=" . $playerID);
@@ -215,6 +233,7 @@ function getExpRecent($playerID){
 	return $returned;
 }
 
+//Gets the token validation link
 function getTokenLink(){
 	$key = getWGAPIkey();
 	$info = file_get_contents("https://api.worldoftanks.com/wot/auth/login/?application_id=".$key."&nofollow=1&redirect_uri=http://www.tioga.moe/signature/signature.php");
@@ -224,6 +243,7 @@ function getTokenLink(){
 	return $location;
 }
 
+//No longer used - used to return whether or not wotlabs.net was down
 function wotlabsDown(){
 	$info = file_get_contents('http://www.downforeveryoneorjustme.com/http://wotlabs.net/na/player/tioga060');
 	if (strrpos($info, 'not just you')>-1){
@@ -232,6 +252,7 @@ function wotlabsDown(){
 	else {return false;}
 }
 
+//Copies all tank icons to the server, only used manually every game update
 function copyTankIcons(){
 	$key = getWGAPIkey();
 	$contents = file_get_contents("https://api.worldoftanks.com/wot/encyclopedia/tanks/?application_id=".$key."&fields=contour_image,tank_id");
@@ -245,6 +266,7 @@ function copyTankIcons(){
 	}
 }
 
+//Gets the database password and name from the settings file
 function getDbInfo(){
 	$dbinfo = file_get_contents("./settings.conf");
 	$dbinfo = json_decode($dbinfo, true);
@@ -253,6 +275,7 @@ function getDbInfo(){
 	return(array($dbname, $dbpass));
 }
 
+//gets my wargaming API key
 function getWGAPIkey(){
 	$dbinfo = file_get_contents("./settings.conf");
 	$dbinfo = json_decode($dbinfo, true);
@@ -260,6 +283,7 @@ function getWGAPIkey(){
 	return($wgapikey);
 }
 
+//gets my wotlabs api key
 function getWotlabskey(){
 	$dbinfo = file_get_contents("./settings.conf");
 	$dbinfo = json_decode($dbinfo, true);

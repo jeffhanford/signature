@@ -10,6 +10,9 @@
 //include 'WGAPI.php';
 include 'colorscales.php';
 
+//Gets the players stats (may be more appropriate in WGAPI.php)
+//Takes the playerID as a string as input
+//Returns the players average tier, wn8, recent wn8, recent winrate, exp rank and value, and top 3 tanks
 function getStats($playerID){
 	list($name, $clanID, $personalrating, $battles, $wr, $inclan) = getPlayerInfo($playerID);
 	
@@ -32,6 +35,9 @@ function getStats($playerID){
 	
 }
 
+
+//Master sig creation function
+//Takes the player's database information and stats as an input and creates the image with the designated filename
 function makeSig($playerID, $namecolor, $backcolor, $signame, $filename, $settings, $stats){	
 
 	list($name, $clanID, $pr, $battles, $wr, $inclan, $clan, $rank, $tier, $wn8, $rwn8, $rwr,$exprank, $expvalue,$tank1, $tank2, $tank3) = $stats;
@@ -40,16 +46,14 @@ function makeSig($playerID, $namecolor, $backcolor, $signame, $filename, $settin
 	$gamessetting = $settings['games'];
 	
 	
-
 	$namet = explode(",", $namecolor);
 	$backt = explode(",", $backcolor);
 	$namergb = array((int)$namet[0],(int)$namet[1],(int)$namet[2]);
 	$backrgb = array((int)$backt[0],(int)$backt[1],(int)$backt[2]);
 	
+	//Properly sized image
 	$image = imagecreatefrompng("./custom/blacksig.png");
-	//output header
-	//header('Content-Type: image/png'); 
-	//output image
+	
 	$imagename1 = "./custom/";
 	$imagename1 .= (string)$signame;
 	$imagename1 .= ".png";
@@ -74,6 +78,8 @@ function makeSig($playerID, $namecolor, $backcolor, $signame, $filename, $settin
 	$whitesemi  = imagecolorallocatealpha($image, 255, 255, 255, 60);
 	$black = imagecolorallocate($image, 0, 0, 0);
 	$pink = imagecolorallocate($image, 255, 20, 147);
+	
+	//array for use in getcolors functions
 	$colors = array($darkred, $red, $orange, $yellow, $lightgreen, 
 				$green, $lightblue, $blue, $lightpurple, $purple, $pink);
 	
@@ -84,10 +90,10 @@ function makeSig($playerID, $namecolor, $backcolor, $signame, $filename, $settin
 	$rwrcolor = $colors[getwrcolor($rwr)];
 	
 	if ($name == "Mawderator"){
-		$name = "Memerator";
+		$name = "Memerator_VS";
 	}
 	
-	
+	//Only put the background color if there is no custom picture
 	if($imagename1 == './custom/blacksig.png'){
 		imagefilledrectangle($image, 0, 0, 468, 100, $backc);
 	}
@@ -101,7 +107,7 @@ function makeSig($playerID, $namecolor, $backcolor, $signame, $filename, $settin
 	
 	
 	
-
+	//Overlay stats rectangle
 	$fontt = './verdanab.ttf';
 	imagettftext($image, 5, 0, 6, 11, $white, $fontt, 'RECENT WR');
 	imagettftext($image, 14, 0, 3, 32, $white, $fontt, $rwr);
@@ -113,16 +119,25 @@ function makeSig($playerID, $namecolor, $backcolor, $signame, $filename, $settin
 	imagettftext($image, 5, 0, 72, 49, $white, $fontt, 'OVERALL');
 	imagettftext($image, 14, 0, 63, 70, $white, $fontt, $wn8);
 	
-	imagettftext($image, 13, 0, 130, 20, $namec, $fontt, $name);
+	if ($name == "vonluckner"){
+		//imagettftext($image, 72, 10, 150, 110, $green, "./old_stamper.ttf", "[ALIVE]");
+		imagettftext($image, 13, 0, 130, 20, $namec, $fontt, "VONluckner");
+		imagettftext($image, 14, 0, 150, 80, $red, "./old_stamper.ttf", "[Best Job I Ever Had]");
+		//imagettftext($image, 14, 0, 20, 98, $white, "./old_stamper.ttf", "[Best gunner in the entire 9th Army]");
+		//$clan = "Warships";
+		//$rank = "Alpha-NDA\nTester-NDA";
+	}
+	else{
+		imagettftext($image, 13, 0, 130, 20, $namec, $fontt, $name);	
+	}
 	
-	//imagettftext($image, 10, 0, 130, 70, $namec, $fontt, $tier);
+	//Overlays the clan image
 	if ($inclan){
 		if($clansetting){
 			
 			imagettftext($image, 8, 0, 396, 9, $namec, $fontt, $rank);
 			imagettftext($image, 10, 0, 396, 32, $namec, $fontt, $clan);
-			
-			//lets add an image over it too, create instance of image
+	
 			$clanimage = './clans/';
 			$clanimage .= (string)$clan;
 			$clanimage .= '.png';
@@ -134,7 +149,7 @@ function makeSig($playerID, $namecolor, $backcolor, $signame, $filename, $settin
 		}
 	}
 	
-	
+	//Overlays the player's exp ranking if they are in the top 1000
 	if (($exprank <=1000) && ($exprank >0)){
 		//imagefilledrectangle($image, 0, 76, 120, 100, $pink);
 		imagettftext($image, 5, 0, 4, 83, $namec, $fontt, "Exp/Game");
@@ -150,16 +165,16 @@ function makeSig($playerID, $namecolor, $backcolor, $signame, $filename, $settin
 		//imagettftext(
 		
 	}
-	if ($name == "vonluckner"){
-		imagettftext($image, 72, 10, 150, 110, $red, "./old_stamper.ttf", "[DEAD]");
-	}
 	
+	//Inifial battles and tier placement
 	$batx=130;
 	$baty=34;
 	$tierx=130;
 	$tiery=48;
 	
+	//Overlay the most played tanks
 	if($toptanks==true){
+		//Move battles and tier if the player wants their top tanks displayed
 		$batx=260;
 		$baty=98;
 		$tierx=320;
@@ -187,23 +202,17 @@ function makeSig($playerID, $namecolor, $backcolor, $signame, $filename, $settin
 		imagecopy($image, $imtank3, 130, 75, 0, 0, $w, $h);
 	}
 	
+	//If the player wants the number of games displayed
 	if($gamessetting){
 		imagettftext($image, 10, 0, $batx, $baty, $namec, $fontt, $battles);
 		imagettftext($image, 10, 0, $tierx, $tiery, $namec, $fontt, $tier);
 	}
 	
-	
-	//$blankimage = imagecreatetruecolor(64, 64);
-	//imagealphablending( $blankimage, false );
-	//imagesavealpha( $blankimage, true );
-	
-	
-	
+	//If the player has over 10000 pr, give them the pr sticker
 	if($pr>10000){
 		$prclub = imagecreatefrompng("10k.png");
 		imagecopymerge($image, $prclub, 378, 82, 0, 0, 16, 16, 100);
 	}
-
 	
 	$imagename = './sigs/';
 	$imagename .= (string)$filename;
@@ -211,11 +220,13 @@ function makeSig($playerID, $namecolor, $backcolor, $signame, $filename, $settin
 	
 	$imagename = strtolower($imagename);
 	
+	//Write the image
 	imagepng($image, $imagename);
 	imagedestroy($image);
 
 }
 
+//Experimental function for a new signature type
 function makesig2($signame, $filename, $stats){
 	list($name, $clanID, $personalrating, $battles, $wr, $inclan, $clan, $rank, $tier, $wn8, $rwn8, $rwr, $exprank, $expvalue) = $stats;
 	$image = imagecreatefrompng("./custom/blacksig.png");

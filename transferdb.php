@@ -8,7 +8,8 @@
 <body>
 <?php
 include 'WGAPI.php';
-//First, we need to update the database with all of the player's information
+
+//Manually transfers the old database to teh new one, no longer used
 
 list($dbname, $dbpass) = getDbInfo();
 $con=mysqli_connect(ini_get("mysql.default_host"),$dbname,$dbpass);

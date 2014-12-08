@@ -7,6 +7,9 @@
 
 <body>
 <?php
+
+//Takes the player's WN8 ranking as a string input
+//Returns the array index representative of the color that corresponds to the player's WN8 ranking
 function getwncolor($input){		
 	$n = (int)$input;
 	if ($n < 300) { return 0; }
@@ -22,6 +25,9 @@ function getwncolor($input){
 	else if ($n >= 3800) { return 10; }
 	else return 0;
 }
+
+//Takes the player's winrate as a string input, formatted as "xx%" (example: 50%)
+//Returns the array index representative of the color that corresponds to the player's winrate
 function getwrcolor($input){		
 	$n = (float)substr($input, 0, strlen($input)-1);
 	if ($n < 46.0) { return 0; }

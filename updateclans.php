@@ -7,7 +7,10 @@
 
 <body>
 <?php
-	
+	//Manually called, updates clan icons to newest versions
+
+
+	include 'WGAPI.php';
 	list($dbname, $dbpass) = getDbInfo();
 	$con=mysqli_connect(ini_get("mysql.default_host"),$dbname,$dbpass);
 	// Check connection

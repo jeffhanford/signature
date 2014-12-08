@@ -8,9 +8,9 @@
 <body>
 <?php
 include 'WGAPI.php';
-$stats = getWotlabs("Tioga060");
+//echo var_dump(getDbInfo());
 
-echo var_dump($stats);
+
 
 
 ?>
